@@ -1,0 +1,15 @@
+# IDEs
+.idea/
+.vscode/
+
+# Libraries & Junk
+node_modules/
+
+# Output files
+out/
+dist/
+target/
+
+# Runtime
+run/
+config.json
