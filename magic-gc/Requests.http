@@ -1,1 +1,25 @@
+### Data Upload
+
 POST http://127.0.0.1:8080/sdk/dataUpload
+
+### Create Account
+
+POST http://127.0.0.1:8080/magic-gc/api/account/create
+Content-Type: application/json
+
+{
+  "email": "magix@grasscutter.io",
+  "account": "magix",
+  "password": "magix"
+}
+
+### Create Session
+
+POST http://127.0.0.1:8080/hk4e_global/mdk/shield/api/login
+Content-Type: application/json
+
+{
+  "account": "magix@grasscutter.io",
+  "password": "magix",
+  "is_crypto": true
+}
