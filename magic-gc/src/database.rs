@@ -3,6 +3,7 @@ use log::info;
 use mongodb::bson::{doc, Document};
 use mongodb::{Client, Collection};
 use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
 use crate::options::Options;
 use crate::structs::LoginData;
 
@@ -15,6 +16,37 @@ pub async fn setup_client(options: Options) {
     DATABASE_CLIENT.lock().unwrap().replace(client);
 
     info!("Connected to MongoDB.");
+}
+
+/// Generic MongoDB find document function.
+/// query: The query to pass to MongoDB to find the document.
+/// collection: The collection to find the document in.
+async fn find<T>(query: Document, collection: &str) -> Option<T>
+    where T: DeserializeOwned + Unpin + Send + Sync {
+    let client = DATABASE_CLIENT.lock()
+        .unwrap().as_ref().unwrap().clone();
+
+    let db = client.database("grasscutter");
+    let collection: Collection<T> = db.collection(collection);
+
+    collection.find_one(query, None)
+        .await.expect("Failed to find object")
+}
+
+/// Generic MongoDB update document function.
+/// query: The query to pass to MongoDB to find the document.
+/// value: The value to update the document with.
+/// collection: The collection to update the document in.
+async fn update<T>(value: T, collection: &str)
+    where T: Serialize + Unpin + Send + Sync {
+    let client = DATABASE_CLIENT.lock()
+        .unwrap().as_ref().unwrap().clone();
+
+    let db = client.database("grasscutter");
+    let collection: Collection<T> = db.collection(collection);
+
+    collection.insert_one(value, None)
+        .await.expect("Failed to update object");
 }
 
 #[derive(Serialize, Deserialize)]
@@ -37,35 +69,7 @@ impl Account {
     /// Generic find function.
     /// document: The document to find.
     pub async fn find(document: Document) -> Option<Account> {
-        let client = DATABASE_CLIENT.lock()
-            .unwrap().as_ref().unwrap().clone();
-
-        let db = client.database("grasscutter");
-        let collection = db.collection("accounts");
-
-        collection.find_one(document, None)
-            .await.expect("Failed to find object")
-    }
-
-    /// Generates a random ID for an account.
-    /// The ID returned is unique.
-    pub async fn generate_id() -> String {
-        let client = DATABASE_CLIENT.lock()
-            .unwrap().as_ref().unwrap().clone();
-
-        let db = client.database("grasscutter");
-        let collection: Collection<Account> = db.collection("accounts");
-
-        let mut id: String;
-        loop {
-            id = crate::utils::random_string(32);
-            if collection.find_one(doc! { "_id": &id }, None)
-                .await.expect("Failed to find object").is_none() {
-                break;
-            }
-        }
-
-        id
+        find(document, "accounts").await
     }
 
     /// Finds an account by its ID.
@@ -113,13 +117,48 @@ impl Account {
     /// This function is used to create accounts.
     /// This will not update an existing account.
     pub async fn save(&self) {
-        let client = DATABASE_CLIENT.lock()
-            .unwrap().as_ref().unwrap().clone();
+        update(self, "accounts").await;
+    }
+}
 
-        let db = client.database("grasscutter");
-        let collection: Collection<Account> = db.collection("accounts");
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Counter {
+    #[serde(rename = "_id")]
+    pub id: String,
+    pub count: i32
+}
 
-        collection.insert_one(self, None)
-            .await.expect("Failed to insert object");
+impl Counter {
+    /// Generic find function.
+    /// document: The document to find.
+    pub async fn find(document: Document) -> Option<Counter> {
+        find(document, "counters").await
+    }
+
+    /// Gets and increments the next ID for the given counter.
+    /// counter_name: The name of the counter to get the next ID for.
+    pub async fn next_id(counter_name: &str, default: i32) -> i32 {
+        // Check if the counter exists.
+        let counter: Option<Counter> = Counter::find(
+            doc! { "_id": counter_name }).await;
+        let mut counter = match counter {
+            Some(counter) => counter,
+            None => {
+                let counter = Counter {
+                    id: counter_name.to_string(),
+                    count: default
+                };
+                update(counter, "counters").await;
+                return default;
+            }
+        };
+
+        // Increment the counter.
+        let prev_count = counter.count.clone();
+        counter.count += 1;
+        update(counter, "counters").await;
+
+        prev_count
     }
 }

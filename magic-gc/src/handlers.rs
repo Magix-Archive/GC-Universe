@@ -1,6 +1,6 @@
 use rouille::{Request, Response};
 use serde_json::json;
-use crate::database::Account;
+use crate::database::{Account, Counter};
 use crate::structs::{AccountCreate, AccountLogin};
 
 macro_rules! rsp {
@@ -22,7 +22,7 @@ macro_rules! decode {
     ($strc:tt, $body:tt, $rsp:tt) => {
         match serde_json::from_reader::<_, $strc>($body) {
             Ok(body) => body,
-            Err(err) => return rsp!($rsp)
+            Err(_) => return rsp!($rsp)
         }
     };
 }
@@ -45,7 +45,8 @@ pub async fn create_account(request: &Request) -> Response {
 
     // Create the account.
     let account = Account {
-        id: Account::generate_id().await,
+        id: Counter::next_id("accounts", 100_000_000)
+            .await.to_string(),
         username: body.account.clone(),
         email: body.email.clone(),
         password: body.password.clone(),
