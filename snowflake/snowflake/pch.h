@@ -10,7 +10,10 @@
 #include <map>
 
 #include <Windows.h>
+#include "detours.h"
 
 #include "Logger.h"
+
+#include "il2cpp-types.h"
 
 #endif

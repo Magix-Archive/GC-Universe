@@ -64,7 +64,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)utils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)utils;$(ProjectDir)il2cpp;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -82,7 +82,7 @@
       <PreprocessorDefinitions>NDEBUG;CPPDYNAMICLIBRARYTEMPLATE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)utils;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)utils;$(ProjectDir)il2cpp;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -101,14 +101,16 @@
     <ClCompile Include="utils\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\patch.hpp" />
     <ClInclude Include="detours.h" />
+    <ClInclude Include="il2cpp\il2cpp-types.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="app\game.h" />
     <ClInclude Include="app\main.h" />
     <ClInclude Include="utils\Console.h" />
     <ClInclude Include="utils\Logger.h" />
-    <ClInclude Include="utils\Security.h" />
-    <ClInclude Include="utils\Utilities.hpp" />
+    <ClInclude Include="utils\security.h" />
+    <ClInclude Include="utils\utilities.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="detours.lib" />
