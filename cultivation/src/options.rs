@@ -5,7 +5,17 @@ use crate::{str, utils};
 #[serde(rename_all(deserialize = "PascalCase"))]
 pub struct Server {
     pub host: String,
-    pub port: u16
+    pub port: u16,
+    pub encrypted: bool
+}
+
+impl Server {
+    /// Parses the server's address into a string.
+    pub fn address(&self) -> String {
+        format!("{}://{}:{}",
+            if self.encrypted { "https" } else { "http" },
+            self.host, self.port)
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -47,10 +57,12 @@ impl Options {
     /// game: The name of the game.
     /// path: The path to the game's executable.
     pub fn set_game_path(&self, game: &str, path: String) {
-        let options = self.clone();
-        let mut game = options.game_from_name(game);
-
-        game.path = path;
+        let mut options = self.clone();
+        match game {
+            "genshin" => options.genshin.path = path,
+            "starrail" => options.starrail.path = path,
+            _ => panic!("Invalid game provided.")
+        };
 
         utils::write_json("config.json", options).unwrap();
     }
@@ -59,12 +71,22 @@ impl Options {
     /// game: The name of the game.
     /// host: The server's address.
     /// port: The server's port.
-    pub fn set_server(&self, game: &str, host: String, port: u16) {
-        let options = self.clone();
-        let mut game = options.game_from_name(game);
-
-        game.proxy.host = host;
-        game.proxy.port = port;
+    /// encrypted: Whether the server uses HTTPS.
+    pub fn set_server(&self, game: &str, host: String, port: u16, encrypted: bool) {
+        let mut options = self.clone();
+        match game {
+            "genshin" => {
+                options.genshin.proxy.host = host;
+                options.genshin.proxy.port = port;
+                options.genshin.proxy.encrypted = encrypted;
+            },
+            "starrail" => {
+                options.starrail.proxy.host = host;
+                options.starrail.proxy.port = port;
+                options.starrail.proxy.encrypted = encrypted;
+            },
+            _ => panic!("Invalid game provided.")
+        };
 
         utils::write_json("config.json", options).unwrap();
     }
@@ -77,19 +99,21 @@ impl Default for Options {
                 path: str!(r#"C:\Program Files\Genshin Impact\Genshin Impact game\GenshinImpact.exe"#),
                 proxy: Server {
                     host: str!("127.0.0.1"),
-                    port: 8080
+                    port: 8080,
+                    encrypted: false
                 }
             },
             starrail: Game {
                 path: str!(r#"C:\Program Files\Honkai Star Rail\Star Rail game\GenshinImpact.exe"#),
                 proxy: Server {
                     host: str!("127.0.0.1"),
-                    port: 8080
+                    port: 8080,
+                    encrypted: false
                 }
             },
             proxy: Proxy {
                 host: str!("127.0.0.1"),
-                port: 2024,
+                port: 8365,
                 cert_path: str!("certs"),
                 urls: vec!(
                     str!("hoyoverse.com"),

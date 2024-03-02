@@ -42,10 +42,8 @@ impl HttpHandler for TrafficHandler {
             return request.into();
         }
 
-        // Handle CONNECTs
         let game = State::game();
-        let server_host = game.proxy.host;
-        let server_port = game.proxy.port;
+        let server = game.proxy.address();
 
         if request.method().as_str() == "CONNECT" {
             let builder = Response::builder()
@@ -53,16 +51,13 @@ impl HttpHandler for TrafficHandler {
                 .status(StatusCode::OK);
             let res = builder.body(()).unwrap();
 
-            // Respond to CONNECT
             *res.body()
         } else {
             let uri_path_and_query = request.uri().path_and_query().unwrap().as_str();
             // Create new URI.
-            let new_uri = Uri::from_str(format!("{}:{}{}",
-                                                server_host,
-                                                server_port,
-                                                uri_path_and_query)
-                .as_str()).unwrap();
+            let new_uri = Uri::from_str(
+                format!("{}{}", server, uri_path_and_query).as_str()
+            ).unwrap();
             // Set request URI to the new one.
             *request.uri_mut() = new_uri;
         }

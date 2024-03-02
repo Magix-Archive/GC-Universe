@@ -58,7 +58,11 @@ fn clap() -> Command {
                 .arg(arg!(--custom "Connect to a private server")
                     .value_parser(clap::value_parser!(bool))
                     .default_value("false")
-                    .require_equals(true))
+                    .default_missing_value("true"))
+                .arg(arg!(--proxy "Use the Cultivation proxy")
+                    .value_parser(clap::value_parser!(bool))
+                    .default_value("true")
+                    .default_missing_value("true"))
         )
         .subcommand(
             Command::new("proxy")
@@ -88,6 +92,10 @@ fn clap() -> Command {
                         .arg(arg!([PORT] "The port to connect to")
                             .value_parser(clap::value_parser!(u16))
                             .required(true))
+                        .arg(arg!([ENCRYPTED] "Whether to use HTTPS or HTTP")
+                            .value_parser(clap::value_parser!(bool))
+                            .required(false)
+                            .default_value("false"))
                 )
         )
 }
@@ -132,17 +140,36 @@ async fn main() {
                     let game = app.game_from_name(game);
                     let custom = matches.get_one::<bool>("custom")
                         .unwrap_or(&false);
+                    let with_proxy = matches.get_one::<bool>("proxy")
+                        .unwrap_or(&true);
 
-                    // Enable the proxy & patch the game if required.
-                    if *custom {
-                        custom::patch_game(&game);
-                        custom::enable_proxy(&game);
+                    // Check if the game path exists.
+                    if !utils::file_exists(&game.path) {
+                        println!("Game path does not exist.");
+                        return;
+                    }
+
+                    // Create and enable the proxy.
+                    if *custom && *with_proxy {
+                        proxy::create_proxy(app.clone());
+                        custom::enable_proxy(&app);
                     }
 
                     // Launch the game.
                     std::process::Command::new(&game.path)
                         .spawn()
                         .expect("Failed to launch game.");
+
+                    // Wait for the game to close or until the user stops the app.
+                    let process_name = game.path.replace("/", "\\");
+                    let process_name = process_name.split("\\").last()
+                        .expect("No executable name provided.");
+
+                    println!("Waiting for game to close...");
+                    println!("You can also stop by pressing Ctrl + C");
+                    system::wait_for_action(process_name.to_string()).await;
+
+                    custom::disable_proxy();
                 },
                 None => println!("No game provided.")
             }
@@ -178,7 +205,8 @@ async fn main() {
                     let game = matches.get_one::<String>("GAME").unwrap();
                     let host = matches.get_one::<String>("HOST").unwrap();
                     let port = matches.get_one::<u16>("PORT").unwrap();
-                    app.set_server(&game, host.clone(), port.clone());
+                    let encrypted = matches.get_one::<bool>("ENCRYPTED").unwrap();
+                    app.set_server(&game, host.clone(), port.clone(), *encrypted);
                 }
                 _ => println!("No config option provided.")
             }

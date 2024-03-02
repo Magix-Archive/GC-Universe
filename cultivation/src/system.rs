@@ -1,5 +1,8 @@
 use std::env::{args, current_dir, set_current_dir, current_exe};
 use std::process::{exit, Command};
+use sysinfo::System;
+use tokio::select;
+use tokio::time::{Duration, sleep};
 use crate::structs::State;
 
 /// Runs a system command in a new thread.
@@ -86,4 +89,36 @@ pub fn elevate() {
     }
 
     exit(0);
+}
+
+/// Waits for a process to close or for a CTRL + C.
+/// process_name: The name of the process to wait for.
+pub async fn wait_for_action(process_name: String) {
+    select! {
+        _ = wait_for_close(process_name) => {},
+        _ = tokio::signal::ctrl_c() => {}
+    }
+}
+
+/// Waits for the process to close.
+/// process_name: The name of the process to wait for.
+pub async fn wait_for_close(process_name: String) {
+    let mut system = System::new_all();
+    system.refresh_all();
+
+    let mut seen_once = false;
+    loop {
+        system.refresh_all();
+
+        let mut processes = system.processes_by_exact_name(&process_name);
+        let seen = processes.next().is_some();
+
+        if seen && !seen_once {
+            seen_once = true;
+        } else if !seen && seen_once {
+            break;
+        } else {
+            sleep(Duration::from_secs(2)).await;
+        }
+    }
 }
