@@ -3,7 +3,8 @@
 
 #include "game.h"
 #include "Console.h"
-#include "Security.h"
+#include "patch.hpp"
+#include "security.h"
 
 using namespace utils;
 
@@ -19,6 +20,8 @@ void snowflake::snowflake_main(HMODULE h_module)
 
     disable_memory_protections();
     LOG_DEBUG("Memory protections have been disabled.");
+
+    patch_all();
 
     LOG_INFO("Snowflake has finished loading.");
     LOG_INFO("Use 'help' to see a list of commands!");
