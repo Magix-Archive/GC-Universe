@@ -212,9 +212,8 @@ async fn main() {
             }
         },
         _ => {
-            loop {
-
-            }
+            println!("This should launch the Cultivation UI, but it's not done yet.");
+            println!("You should do 'cultivation help' instead!");
         }
     }
 }
