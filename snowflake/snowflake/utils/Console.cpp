@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Console.h"
 
-#include "Utilities.hpp"
+#include "utilities.hpp"
 
 using namespace utils;
 
