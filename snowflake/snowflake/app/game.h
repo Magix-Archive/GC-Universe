@@ -47,11 +47,11 @@ namespace snowflake
      * \param attach Whether to attach or detach the detour.
      * \return A pointer to the original function.
      */
-    void* detour(void* p_target, void* p_detour, bool attach)
+    inline void* detour(void* p_target, void* p_detour, bool attach)
     {
         if (!p_target) return nullptr;
 
-        auto originalFunc = p_target;
+        void* originalFunc = p_target;
 
         DetourTransactionBegin();
         DetourUpdateThread((HANDLE) -2);
