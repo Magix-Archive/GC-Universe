@@ -54,7 +54,7 @@ namespace snowflake
         void* originalFunc = p_target;
 
         DetourTransactionBegin();
-        DetourUpdateThread((HANDLE) -2);
+        DetourUpdateThread(GetCurrentThread());
 
         if (attach)
         {

@@ -48,7 +48,7 @@ void Console::CreateConsoleThread()
 void Console::ProcessCommand(const std::string& command)
 {
     const auto split = utils::split(command, " ");
-    if (split.size() == 0)
+    if (split.empty())
     {
         LOG_INFO("Provide a command to run. Run 'help' for a list of commands.");
         return;
