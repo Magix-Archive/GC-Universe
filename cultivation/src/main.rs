@@ -5,12 +5,15 @@ mod proxy;
 mod system;
 mod structs;
 
+use libc::c_char;
+use std::ffi::CString;
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use clap::{arg, Arg, Command};
 use config::{*, ext::*};
 use once_cell::sync::Lazy;
+use crate::custom::snowflake_path;
 use crate::options::Options;
 use crate::structs::State;
 
@@ -35,6 +38,10 @@ macro_rules! fetch {
 }
 
 global!(STATE, State);
+
+extern "C" {
+    fn open_game(game_path: *const c_char, dll_path: *const c_char);
+}
 
 fn game() -> Arg {
     arg!([GAME] "The game to configure")
@@ -150,15 +157,25 @@ async fn main() {
                     }
 
                     // Create and enable the proxy.
-                    if *custom && *with_proxy {
-                        proxy::create_proxy(app.clone());
-                        custom::enable_proxy(&app);
-                    }
+                    if *custom {
+                        if *with_proxy {
+                            proxy::create_proxy(app.clone());
+                            custom::enable_proxy(&app);
+                        }
 
-                    // Launch the game.
-                    std::process::Command::new(&game.path)
-                        .spawn()
-                        .expect("Failed to launch game.");
+                        // Launch the game.
+                        let game_path = CString::new(game.path.clone()).unwrap();
+                        let dll_path = CString::new(snowflake_path()).unwrap();
+
+                        unsafe {
+                            open_game(game_path.as_ptr(), dll_path.as_ptr());
+                        }
+                    } else {
+                        // Launch the game.
+                        std::process::Command::new(&game.path)
+                            .spawn()
+                            .expect("Failed to launch game.");
+                    }
 
                     // Wait for the game to close or until the user stops the app.
                     let process_name = game.path.replace("/", "\\");

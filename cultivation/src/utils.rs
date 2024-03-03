@@ -4,8 +4,8 @@ use serde::Serialize;
 
 /// Check if a file exists from a file path.
 /// file_path: The path to the file.
-pub fn file_exists(file_path: &str) -> bool {
-    Path::new(&file_path).exists()
+pub fn file_exists<S: AsRef<str>>(file_path: S) -> bool {
+    Path::new(file_path.as_ref()).exists()
 }
 
 /// Write a JSON file from a Rust object.

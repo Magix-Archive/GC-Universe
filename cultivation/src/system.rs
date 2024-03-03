@@ -122,3 +122,30 @@ pub async fn wait_for_close(process_name: String) {
         }
     }
 }
+
+/// Fetches the path where the executable is located.
+pub fn install_location() -> String {
+    let mut exe_path = current_exe().unwrap();
+
+    #[cfg(windows)]
+    {
+        exe_path.pop();
+        return exe_path.to_str().unwrap().to_string();
+    }
+
+    #[cfg(linux)]
+    {
+        let bin_name = exe_path.file_name().unwrap().to_str().unwrap().to_string();
+        exe_path.pop();
+        if exe_path.starts_with("/usr/bin") {
+            let mut path = PathBuf::from("/usr/lib");
+            path.push(bin_name);
+            path
+        } else {
+            exe_path
+        }
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+}

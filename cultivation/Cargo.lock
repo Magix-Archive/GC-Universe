@@ -410,9 +410,11 @@ dependencies = [
 name = "cultivation"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "clap",
  "hudsucker",
  "is_elevated",
+ "libc",
  "more-config",
  "once_cell",
  "rcgen 0.12.1",

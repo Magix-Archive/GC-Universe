@@ -1,7 +1,34 @@
 use registry::{Data, Hive, Security};
 use crate::options::Options;
+use crate::system::install_location;
+use crate::utils::file_exists;
 
+#[cfg(windows)]
 static INTERNET_SETTINGS: &str = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
+
+#[cfg(windows)]
+pub fn snowflake_path() -> String {
+    let path = format!("{}\\snowflake.dll", install_location());
+
+    // Check if the snowflake DLL exists.
+    if !file_exists(&path) {
+        // Copy the snowflake DLL to the installation directory.
+        let bytes = include_bytes!("../resources/snowflake.dll");
+        std::fs::write(&path, bytes).unwrap();
+    }
+
+    path
+}
+
+#[cfg(linux)]
+pub fn snowflake_path() -> String {
+    "".to_string()
+}
+
+#[cfg(macos)]
+pub fn snowflake_path() -> String {
+    "".to_string()
+}
 
 #[cfg(windows)]
 pub fn enable_proxy(options: &Options) {
