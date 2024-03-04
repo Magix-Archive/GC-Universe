@@ -11,6 +11,7 @@
 
 #include <Windows.h>
 #include "detours.h"
+#include "inipp/inipp.h"
 
 #include "Logger.h"
 
