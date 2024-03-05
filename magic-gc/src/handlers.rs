@@ -1,5 +1,6 @@
 use rouille::{Request, Response};
 use serde_json::json;
+use crate::crypto::decrypt_password;
 use crate::database::{Account, Counter};
 use crate::structs::{AccountCreate, AccountLogin};
 
@@ -62,7 +63,14 @@ pub async fn create_account(request: &Request) -> Response {
 /// The client sends this request to check if a captcha should be served.
 /// request: The request from the client.
 pub fn serve_captcha(request: &Request) -> Response {
-    Response::text("Hello, world!")
+    rsp!({
+        "retcode": 0,
+        "message": "OK",
+        "data": {
+            "id": "none",
+            "action": "ACTION_NONE"
+        }
+    })
 }
 
 /// Route: POST /{game_id}/mdk/shield/api/login
@@ -78,6 +86,13 @@ pub async fn create_session(request: &Request, _: String) -> Response {
         true => Account::find_email(&body.account).await,
         false => Account::find_username(&body.account).await
     };
+
+    // Attempt to decrypt the password.
+    let password = match body.is_crypto {
+        false => body.password,
+        true => decrypt_password(body.password)
+    };
+    println!("Password for account is {}", password);
 
     // Check if the account exists.
     if account.is_none() {

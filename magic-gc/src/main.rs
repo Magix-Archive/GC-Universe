@@ -4,6 +4,7 @@ mod options;
 mod handlers;
 mod database;
 mod structs;
+mod crypto;
 
 use log::info;
 use config::{*, ext::*};
