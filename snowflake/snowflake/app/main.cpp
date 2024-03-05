@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "main.h"
 
+#include "config.h"
 #include "game.h"
 #include "Console.h"
 #include "patch.hpp"
@@ -10,7 +11,13 @@ using namespace utils;
 
 void snowflake::snowflake_main(HMODULE h_module)
 {
-    create_console();
+    // Load the configuration file.
+    parse();
+
+    if (show_console)
+    {
+        create_console();
+    }
 
     wait_for_startup();
     LOG_DEBUG("Game has finished loading.");

@@ -75,4 +75,9 @@ namespace utils
 
         return 0;
     }
+
+    inline bool file_exists(const std::string& file_path)
+    {
+        return std::filesystem::exists(file_path);
+    }
 }

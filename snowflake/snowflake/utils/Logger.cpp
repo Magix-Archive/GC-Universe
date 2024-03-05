@@ -2,6 +2,8 @@
 
 using namespace utils;
 
+constexpr auto DEBUG_COLOR = 0x0B;
+
 Logger::Level Logger::GetLevelData(const Levels level)
 {
     switch (level)
@@ -9,7 +11,7 @@ Logger::Level Logger::GetLevelData(const Levels level)
     case Levels::Trace:
         return { 0x08, "Trace" };
     case Levels::Debug:
-        return { 0x0B, "Debug" };
+        return { DEBUG_COLOR, "Debug" };
     case Levels::Info:
         return { 0x02, "Info" };
     case Levels::Warning:
@@ -24,11 +26,19 @@ Logger::Level Logger::GetLevelData(const Levels level)
 
 void Logger::print(const std::string& message)
 {
+    // If the console is disabled, don't log anything.
+    if (!snowflake::show_console) return;
+
     std::cout << "[Snowflake] " << message << std::endl;
 }
 
 void Logger::log(const Level level, const std::string& message)
 {
+    // If the console is disabled, don't log anything.
+    if (!snowflake::show_console) return;
+    // If debug logging is disabled, don't log debug messages.
+    if (!snowflake::log_debug && level.color == DEBUG_COLOR) return;
+
     std::cout << "[";
 
     const auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);

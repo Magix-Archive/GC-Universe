@@ -104,6 +104,7 @@
     <ClCompile Include="utils\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\config.h" />
     <ClInclude Include="app\patch.hpp" />
     <ClInclude Include="detours.h" />
     <ClInclude Include="il2cpp\il2cpp-types.h" />
