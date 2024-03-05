@@ -187,7 +187,9 @@ async fn main() {
                     println!("You can also stop by pressing Ctrl + C");
                     system::wait_for_action(process_name.to_string()).await;
 
-                    custom::disable_proxy();
+                    if *with_proxy {
+                        custom::disable_proxy();
+                    }
                 },
                 None => println!("No game provided.")
             }
