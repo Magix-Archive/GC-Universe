@@ -16,7 +16,7 @@ void print(const std::string& message)
     std::cout << message << std::endl;
 }
 
-bool DriverLoaded() 
+bool DriverLoaded()
 {
     DWORD cb_needed;
 
@@ -153,7 +153,7 @@ void InternalResume(const HANDLE* phProcess)
 
 void WaitForDriver(const HANDLE* phProcess)
 {
-    print("Searching for 'HoYoKProtect.sys'...");
+    print("[Disable AC] Searching for 'HoYoKProtect.sys'...");
 
     DWORD needed;
     auto driverFound = false;
@@ -162,7 +162,7 @@ void WaitForDriver(const HANDLE* phProcess)
         LPVOID drivers[1024];
         if (!EnumDeviceDrivers(drivers, sizeof(drivers), &needed) || needed > sizeof(drivers))
         {
-            print("Unable to fetch drivers. Overallocation with driver list.");
+            print("[Disable AC] Unable to fetch drivers. Overallocation with driver list.");
             break;
         }
 
@@ -173,12 +173,12 @@ void WaitForDriver(const HANDLE* phProcess)
             TCHAR driverName[1024];
             if (!GetDeviceDriverBaseName(drivers[i], driverName, std::size(driverName)))
             {
-                print("Unable to fetch drivers. Cannot fetch name of driver.");
+                print("[Disable AC] Unable to fetch drivers. Cannot fetch name of driver.");
                 continue;
             }
 
             if (_tcsicmp(driverName, DRIVER_NAME) != 0) continue;
-            print("Driver detected at " + std::to_string((uintptr_t)drivers[i]));
+            print("[Disable AC] Driver detected at " + std::to_string((uintptr_t)drivers[i]));
 
             driverFound = true;
 
