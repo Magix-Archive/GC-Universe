@@ -5,7 +5,7 @@ use mongodb::{Client, Collection};
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use crate::options::Options;
-use crate::structs::LoginData;
+use crate::structs::{AccountData, LoginData};
 
 static DATABASE_CLIENT: Mutex<Option<Client>> = Mutex::new(None);
 
@@ -105,12 +105,16 @@ impl Account {
     /// Creates a login data object from the account.
     /// This is used to send account information to the client.
     pub fn login_data(&self) -> LoginData {
-        let mut data = LoginData::default();
-        data.uid = Some(self.id.clone());
-        data.token = Some(self.login_token.clone());
-        data.email = self.email.clone();
+        // Prepare the account data.
+        let mut account_data = AccountData::default();
+        account_data.uid = Some(self.id.clone());
+        account_data.token = Some(self.login_token.clone());
+        account_data.email = self.email.clone();
 
-        data
+        // Prepare the login data.
+        let mut login_data = LoginData::default();
+        login_data.account = account_data;
+        login_data
     }
 
     /// Creates the account in the database.

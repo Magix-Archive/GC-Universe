@@ -14,8 +14,29 @@ pub struct AccountCreate {
     pub password: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize)]
 pub struct LoginData {
+    pub account: AccountData,
+    pub device_grant_required: bool,
+    pub realname_operation: String,
+    pub realperson_required: bool,
+    pub safe_mobile_required: bool
+}
+
+impl Default for LoginData {
+    fn default() -> Self {
+        LoginData {
+            account: Default::default(),
+            device_grant_required: false,
+            realname_operation: "NONE".to_string(),
+            realperson_required: false,
+            safe_mobile_required: false
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct AccountData {
     pub uid: Option<String>,
     pub name: String,
     pub email: String,
@@ -39,9 +60,9 @@ pub struct LoginData {
     pub device_grant_ticket: String,
 }
 
-impl Default for LoginData {
+impl Default for AccountData {
     fn default() -> Self {
-        LoginData {
+        AccountData {
             uid: None,
             name: Default::default(),
             email: Default::default(),
