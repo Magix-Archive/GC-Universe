@@ -71,14 +71,14 @@ bool OpenGame(const char* gamePath, HANDLE* phProcess, HANDLE* phThread)
     HANDLE hToken;
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &hToken))
     {
-        print("Unable to escalate privileges.");
+        print("[Launch Game] Unable to escalate privileges.");
         return false;
     }
 
     const DWORD pidExplorer = FindProcessId("explorer.exe");
     if (pidExplorer == 0)
     {
-        print("Unable to find the 'explorer.exe' process ID.");
+        print("[Launch Game] Unable to find the 'explorer.exe' process ID.");
         return false;
     }
 
@@ -94,7 +94,7 @@ bool OpenGame(const char* gamePath, HANDLE* phProcess, HANDLE* phThread)
         attributeList, 0, PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
         &hExplorer, sizeof(HANDLE), nullptr, nullptr))
     {
-        print("Unable to update the process thread attribute list.");
+        print("[Launch Game] Unable to update the process thread attribute list.");
     }
 
     auto processInfo = PROCESS_INFORMATION{};
@@ -117,7 +117,7 @@ bool OpenGame(const char* gamePath, HANDLE* phProcess, HANDLE* phThread)
     }
     else
     {
-        print("Unable to create the process.");
+        print("[Launch Game] Unable to create the process.");
     }
 
     return result;
@@ -129,11 +129,11 @@ void InternalSuspend(const HANDLE* phProcess)
         GetModuleHandle(TEXT("ntdll")), "NtSuspendProcess")); pfn_nt_suspend_process != nullptr)
     {
         pfn_nt_suspend_process(*phProcess);
-        print("Process suspended successfully.");
+        print("[Disable AC] Process suspended successfully.");
     }
     else
     {
-        print("Unable to fetch 'NtSuspendProcess'.");
+        print("[Disable AC] Unable to fetch 'NtSuspendProcess'.");
     }
 }
 
@@ -143,11 +143,11 @@ void InternalResume(const HANDLE* phProcess)
         GetModuleHandle(TEXT("ntdll")), "NtResumeProcess")); pfn_nt_resume_process != nullptr)
     {
         pfn_nt_resume_process(*phProcess);
-        print("Process resumed successfully.");
+        print("[Disable AC] Process resumed successfully.");
     }
     else
     {
-        print("Unable to fetch 'NtResumeProcess'.");
+        print("[Disable AC] Unable to fetch 'NtResumeProcess'.");
     }
 }
 
@@ -247,21 +247,21 @@ void InjectDll(const HANDLE hProcess, const std::string& dllPath)
 }
 
 extern "C" void open_game(const char* game_path, const char* dll_path) {
-    print("Opening game from " + std::string(game_path) + "...");
+    print("[Launch Game] Opening game from " + std::string(game_path) + "...");
 
     HANDLE hProcess, hThread;
     if (!OpenGame(game_path, &hProcess, &hThread))
     {
-        print("Unable to open the game.");
+        print("[Launch Game] Unable to open the game.");
         return;
     }
 
     WaitForDriver(&hProcess);
 
-    print("Waiting for the game to load...");
+    print("[DLL Injection] Waiting for the game to load...");
     Sleep(5e3);
 
-    print("Injecting DLL from " + std::string(dll_path) + "...");
+    print("[DLL Injection] Injecting DLL from " + std::string(dll_path) + "...");
 
     InjectDll(hProcess, std::string(dll_path));
 
