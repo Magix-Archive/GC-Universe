@@ -1,6 +1,6 @@
 use rouille::{Request, Response};
 use serde_json::json;
-use crate::crypto::decrypt_password;
+use crate::crypto::{decrypt_password, hash_password, verify_password};
 use crate::database::{Account, Counter};
 use crate::structs::{AccountCreate, AccountLogin};
 
@@ -44,13 +44,15 @@ pub async fn create_account(request: &Request) -> Response {
         return rsp!({ "code": -3, "message": "Email already exists." });
     }
 
+    // Hash the password.
+    let (password, salt) = hash_password(body.password);
     // Create the account.
     let account = Account {
         id: Counter::next_id("accounts", 100_000_000)
             .await.to_string(),
         username: body.account.clone(),
         email: body.email.clone(),
-        password: body.password.clone(),
+        password, salt,
         login_token: Default::default(),
         session_token: Default::default()
     };
@@ -87,21 +89,25 @@ pub async fn create_session(request: &Request, _: String) -> Response {
         false => Account::find_username(&body.account).await
     };
 
-    // Attempt to decrypt the password.
-    let password = match body.is_crypto {
-        false => body.password,
-        true => decrypt_password(body.password)
-    };
-    println!("Password for account is {}", password);
-
     // Check if the account exists.
     if account.is_none() {
         return rsp!({ "retcode": -201, "message": "Game account cache information error" });
     }
 
-    // Send back the account information.
+    // Attempt to decrypt the password.
+    let password = match body.is_crypto {
+        false => body.password,
+        true => decrypt_password(body.password)
+    };
+
+    // Check if the password matches the account's password.
     let account = account.unwrap();
-    rsp!({ "message": "OK", "data": account.login_data() })
+    if !verify_password(&password, &account.salt, &account.password) {
+        return rsp!({ "retcode": -201, "message": "Incorrect or invalid password" });
+    }
+
+    // Send back the account information.
+    rsp!({ "retcode": 0, "message": "OK", "data": account.login_data() })
 }
 
 /// Route: POST /{game_id}/mdk/shield/api/verify

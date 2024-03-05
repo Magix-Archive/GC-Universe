@@ -31,5 +31,9 @@ rouille = { version = "3.6.2", features = ["default"] }
 
 # Utility
 rand = "0.8.5"
+
+# Cryptography
+sha256 = "1.5.0"
+bcrypt = "0.15.0"
 rsa_ext = "0.1.2"
 rsa = { version = "0.9.6", features = ["default"] }

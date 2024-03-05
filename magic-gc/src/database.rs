@@ -58,8 +58,8 @@ pub struct Account {
     pub email: String,
     pub username: String,
 
-    // Passwords are currently un-used by Grasscutter.
     pub password: String,
+    pub salt: String,
 
     pub login_token: String, // The login token is used for account authentication.
     pub session_token: String, // The session token is used for game authentication.
