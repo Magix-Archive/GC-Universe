@@ -8,6 +8,7 @@ namespace snowflake
     inline bool log_debug = false;
 
     inline bool print_addresses = false;
+    inline bool show_missing_keys = false;
     inline bool show_read_to_end = false;
     inline bool show_from_xml_string = false;
 
@@ -26,6 +27,7 @@ namespace snowflake
             file << "\n";
             file << "[debug]\n";
             file << "PrintAddresses = false\n";
+            file << "ShowMissingKeys = false\n";
             file << "ReadToEnd = false\n";
             file << "FromXmlString = false\n";
 
@@ -42,6 +44,7 @@ namespace snowflake
         inipp::get_value(ini.sections["snowflake"], "LogDebug", log_debug);
 
         inipp::get_value(ini.sections["debug"], "PrintAddresses", print_addresses);
+        inipp::get_value(ini.sections["debug"], "ShowMissingKeys", show_missing_keys);
         inipp::get_value(ini.sections["debug"], "ReadToEnd", show_read_to_end);
         inipp::get_value(ini.sections["debug"], "FromXmlString", show_from_xml_string);
     }

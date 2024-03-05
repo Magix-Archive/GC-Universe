@@ -5,12 +5,35 @@
 #include "config.h"
 #include "utilities.hpp"
 
-const LPCSTR public_key = "<RSAKeyValue><Modulus>xbbx2m1feHyrQ7jP+8mtDF/pyYLrJWKWAdEv3wZrOtjOZzeLGPzsmkcgncgoRhX4dT+1itSMR9j9m0/OwsH2UoF6U32LxCOQWQD1AMgIZjAkJeJvFTrtn8fMQ1701CkbaLTVIjRMlTw8kNXvNA/A9UatoiDmi4TFG6mrxTKZpIcTInvPEpkK2A7Qsp1E4skFK8jmysy7uRhMaYHtPTsBvxP0zn3lhKB3W+HTqpneewXWHjCDfL7Nbby91jbz5EKPZXWLuhXIvR1Cu4tiruorwXJxmXaP1HQZonytECNU/UOzP6GNLdq0eFDE4b04Wjp396551G99YiFP2nqHVJ5OMQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+const auto mhy_sdk = L"w73pHTzBzdwGIZv75LSU";
+const auto mhy_signing = L"vARY0axYksImhsTicpv09OYfS4";
+
+const LPCSTR signing_key = "<RSAKeyValue><Modulus>xbbx2m1feHyrQ7jP+8mtDF/pyYLrJWKWAdEv3wZrOtjOZzeLGPzsmkcgncgoRhX4dT+1itSMR9j9m0/OwsH2UoF6U32LxCOQWQD1AMgIZjAkJeJvFTrtn8fMQ1701CkbaLTVIjRMlTw8kNXvNA/A9UatoiDmi4TFG6mrxTKZpIcTInvPEpkK2A7Qsp1E4skFK8jmysy7uRhMaYHtPTsBvxP0zn3lhKB3W+HTqpneewXWHjCDfL7Nbby91jbz5EKPZXWLuhXIvR1Cu4tiruorwXJxmXaP1HQZonytECNU/UOzP6GNLdq0eFDE4b04Wjp396551G99YiFP2nqHVJ5OMQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+const LPCSTR sdk_key = "<RSAKeyValue><Modulus>yytg/H9lz7Lm0XcA8LMqIyXPVNApYTcSepT4VDLB4qqqFC3s/Huv8vN7zA/P4uoREIu8KMenADFk7uwrZSxoMWwJgn6A7sbAt1cqAaUXB9J4NzhL0x3AFTiHEQbw86hRvm2VGkbA5sWnr0NZw8SGBBY+EODwNIt51GdBA7eoUQU=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
 
 namespace snowflake
 {
     inline void* o_from_xml_string = nullptr;
     inline void* o_read_to_end = nullptr;
+
+    inline std::string replace_key(const wchar_t* key)
+    {
+        if (wcsstr(key, mhy_sdk) != nullptr)
+        {
+            return sdk_key;
+        }
+
+        if (wcsstr(key, mhy_signing) != nullptr)
+        {
+            return signing_key;
+        }
+
+        const auto length = wcslen(key);
+        if (show_missing_keys)
+            LOG_DEBUG("Missing key for length " + std::to_string(length) + "!");
+
+        return "";
+    }
 
     inline void __fastcall from_xml_string(void* rcx, String* xmlString)
     {
@@ -25,7 +48,7 @@ namespace snowflake
         }
         else
         {
-            new_key = public_key;
+            new_key = replace_key(xmlString->c_str());
         }
 
         if (!new_key.empty() && new_key.size() <= xmlString->size())
@@ -56,7 +79,7 @@ namespace snowflake
         }
         else
         {
-            new_key = public_key;
+            new_key = replace_key(result->c_str());
         }
 
         if (!new_key.empty() && new_key.size() <= result->size())
