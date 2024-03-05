@@ -182,6 +182,7 @@ async fn main() {
                     let process_name = process_name.split("\\").last()
                         .expect("No executable name provided.");
 
+                    println!("------------------------------");
                     println!("Waiting for game to close...");
                     println!("You can also stop by pressing Ctrl + C");
                     system::wait_for_action(process_name.to_string()).await;
@@ -200,6 +201,8 @@ async fn main() {
 
                     State::instance().selected_game = game.clone();
                     proxy::create_proxy(app.clone());
+
+                    println!("------------------------------");
                     println!("Started proxy on {}:{}!",
                              app.proxy.host, app.proxy.port);
                     println!("Press Ctrl+C to stop the proxy.");

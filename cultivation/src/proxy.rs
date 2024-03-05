@@ -161,7 +161,7 @@ fn create_certificate(path: &PathBuf) {
         .expect("Failed to write certificate to disk.");
     fs::write(path.join("key.pem"), key_pem)
         .expect("Failed to write key to disk.");
-    println!("Created certificate and private key.");
+    println!("[Proxy] Created certificate and private key.");
 
     // Install the certificate.
     install_certificate(&cert_path);
@@ -174,7 +174,7 @@ fn install_certificate(path: &PathBuf) {
         vec!["-user", "-addstore", "Root", path.to_str().unwrap()],
         None,
     );
-    println!("Installed certificate.");
+    println!("[Proxy] Installed certificate.");
 }
 
 #[cfg(target_os = "macos")]
@@ -192,5 +192,5 @@ pub fn install_ca_files(path: &PathBuf) {
         ],
         None,
     );
-    println!("Installed certificate.");
+    println!("[Proxy] Installed certificate.");
 }

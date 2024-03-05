@@ -32,7 +32,7 @@ pub fn snowflake_path() -> String {
 
 #[cfg(windows)]
 pub fn enable_proxy(options: &Options) {
-    println!("Enabling proxy...");
+    println!("[Proxy] Enabling proxy...");
 
     // Prepare the proxy string.
     let server = format!(
