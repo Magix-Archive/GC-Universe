@@ -6,9 +6,10 @@ mod database;
 mod structs;
 mod crypto;
 
-use log::info;
+use log::{error, info};
 use config::{*, ext::*};
 use rouille::{Response, router};
+use crate::handlers::init_handlebars;
 use crate::options::Options;
 
 macro_rules! awaitexpr {
@@ -36,21 +37,27 @@ async fn main() {
     database::setup_client(app.clone()).await;
 
     // Build the web server.
+    if let Err(err) = init_handlebars() {
+        error!("Failed to initialize Handlebars: {}", err);
+        return;
+    }
+
     let address = format!("{}:{}", app.server.host, app.server.port);
     info!("Starting server on {}...", address);
 
     rouille::start_server(address, move |request| {
         router!(request,
-            (POST) (/account/risky/api/check) => { handlers::serve_captcha(request) },
-            (POST) (/{game_id: String}/mdk/shield/api/login) => { awaitexpr!(handlers::create_session(request, game_id)) },
-            (POST) (/{game_id: String}/mdk/shield/api/verify) => { handlers::verify_token(request, game_id) },
-            (POST) (/{game_id: String}/combo/granter/login/v2/login) => { handlers::key_exchange(request, game_id) },
+            (POST) (/account/risky/api/check) => { handlers::misc::serve_captcha(request) },
 
-            (POST) (/sdk/dataUpload) => { handlers::data_upload(request) },
-            (POST) (/crashdump/dataUpload) => { handlers::data_upload(request) },
-            (POST) (/apm/dataUpload) => { handlers::data_upload(request) },
+            (POST) (/{game_id: String}/mdk/shield/api/login) => { awaitexpr!(handlers::login::create_session(request, game_id)) },
+            // (POST) (/{game_id: String}/mdk/shield/api/verify) => { handlers::verify_token(request, game_id) },
+            // (POST) (/{game_id: String}/combo/granter/login/v2/login) => { handlers::key_exchange(request, game_id) },
 
-            (POST) (/magic-gc/api/account/create) => { awaitexpr!(handlers::create_account(request)) },
+            // (POST) (/sdk/dataUpload) => { handlers::data_upload(request) },
+            // (POST) (/crashdump/dataUpload) => { handlers::data_upload(request) },
+            // (POST) (/apm/dataUpload) => { handlers::data_upload(request) },
+
+            // (POST) (/magic-gc/api/account/create) => { awaitexpr!(handlers::account::create_account(request)) },
 
             _ => {
                 Response::text("404 Not Found")

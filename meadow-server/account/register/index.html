@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Account Registration</title>
+
+        <link rel="stylesheet" href="/index.scss">
+        <script type="module" src="register.ts"></script>
+
+        <style>
+            .input-field {
+                @apply w-full px-2 py-1 rounded-md border-2 border-black;
+            }
+        </style>
+    </head>
+
+    <body class="flex items-center justify-center bg-pale">
+        <div class="w-1/4 flex flex-col gap-5">
+            <div class="flex justify-between">
+                <span class="text-2xl">{{SERVER_NAME}}</span>
+                <span class="text-2xl">Language</span>
+            </div>
+
+            <form class="pb-5 flex flex-col items-center bg-white rounded-lg overflow-clip gap-5"
+                  method="post"
+            >
+                <span class="flex w-full h-12 text-xl items-center justify-center bg-accent">
+                    Register by Email
+                </span>
+
+                <div class="flex flex-col items-center">
+                    <div class="w-full flex flex-col gap-4 mb-10">
+                        <input
+                            class="input-field" id="email"
+                            type="email" placeholder="Email"
+                            autocomplete="off">
+                        <input
+                            class="input-field" id="code"
+                            type="text" placeholder="Verification Code"
+                            autocomplete="off">
+                        <input
+                            class="input-field" id="password"
+                            type="password" placeholder="Password (8 character min.)"
+                            autocomplete="off">
+                        <input
+                            class="input-field" id="confirm"
+                            type="password" placeholder="Confirm Password"
+                            autocomplete="off">
+                    </div>
+
+                    <button class="w-fit text-xl px-24 py-1 border-2 border-black rounded-md">
+                        Register
+                    </button>
+                </div>
+            </form>
+
+            <span class="flex flex-row justify-center gap-1">
+                Already Registered?
+                <button onclick="login()">Login</button>
+            </span>
+        </div>
+    </body>
+</html>

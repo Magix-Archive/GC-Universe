@@ -1,15 +1,62 @@
+use std::error::Error;
+use std::sync::Mutex;
+use handlebars::Handlebars;
 use rouille::{Request, Response};
-use serde_json::json;
-use crate::crypto::{decrypt_password, hash_password, verify_password};
-use crate::database::{Account, Counter};
-use crate::structs::{AccountCreate, AccountLogin};
+use serde_json::{json, Value};
 
+static HANDLEBARS: Mutex<Option<Handlebars>> = Mutex::new(None);
+
+/// Creates an instance of 'Handlebars' and registers templates.
+pub fn init_handlebars() -> Result<(), Box<dyn Error>> {
+    let handlebars = Handlebars::new();
+
+    HANDLEBARS.lock().unwrap().replace(handlebars);
+    Ok(())
+}
+
+/// Responds with a 404 Not Found error.
+/// Provides the '404.html' file as a response.
+pub fn page_404() -> Response {
+    Response::html(include_str!("../resources/404.html"))
+        .with_status_code(404)
+}
+
+/// Responds with a 500 Internal Server Error.
+/// Provides the '500.html' file as a response.
+pub fn page_500() -> Response {
+    Response::html(include_str!("../resources/500.html"))
+        .with_status_code(500)
+}
+
+/// Renders a file as a response.
+/// file: The file to render.
+pub fn render_file(file: &str) -> Response {
+    match std::fs::read_to_string(file) {
+        Ok(data) => Response::html(data),
+        Err(_) => page_500()
+    }
+}
+
+/// Renders a template with the given data.
+/// template: The name of the template. Must be registered.
+/// data: The data to render the template with.
+pub fn render_template(template: &str, data: Option<Value>) -> Response {
+    let handlebars = HANDLEBARS.lock()
+        .unwrap().as_ref().unwrap().clone();
+    match handlebars.render(template, &data.unwrap_or(json!({}))) {
+        Ok(rendered_data) => Response::html(rendered_data),
+        Err(_) => page_500()
+    }
+}
+
+#[macro_export]
 macro_rules! rsp {
     ($json:tt) => {
         Response::text(serde_json::to_string(&json!($json)).unwrap())
     };
 }
 
+#[macro_export]
 macro_rules! body {
     ($req:tt,$rsp:tt) => {
         match $req.data() {
@@ -19,6 +66,7 @@ macro_rules! body {
     }
 }
 
+#[macro_export]
 macro_rules! decode {
     ($strc:tt, $body:tt, $rsp:tt) => {
         match serde_json::from_reader::<_, $strc>($body) {
@@ -28,87 +76,13 @@ macro_rules! decode {
     };
 }
 
-/// Route: POST /magic-gc/api/account/create
-/// Unique route for creating accounts.
-/// request: The HTTP request.
-pub async fn create_account(request: &Request) -> Response {
-    // Attempt to decode the request's JSON body.
-    let body = body!(request, { "code": -1, "message": "No body provided." });
-    let body = decode!(AccountCreate, body, { "code": -1, "message": "Invalid JSON." });
-
-    // Check if the account with the username exists.
-    if Account::find_username(&body.account).await.is_some() {
-        return rsp!({ "code": -2, "message": "Account already exists." });
-    }
-    if Account::find_email(&body.email).await.is_some() {
-        return rsp!({ "code": -3, "message": "Email already exists." });
-    }
-
-    // Hash the password.
-    let (password, salt) = hash_password(body.password);
-    // Create the account.
-    let account = Account {
-        id: Counter::next_id("accounts", 100_000_000)
-            .await.to_string(),
-        username: body.account.clone(),
-        email: body.email.clone(),
-        password, salt,
-        login_token: Default::default(),
-        session_token: Default::default()
-    };
-    account.save().await;
-
-    return rsp!({ "code": 0, "message": "Account created successfully." })
-}
-
-/// Route: POST /account/risky/api/check
-/// The client sends this request to check if a captcha should be served.
-/// request: The request from the client.
-pub fn serve_captcha(request: &Request) -> Response {
-    rsp!({
-        "retcode": 0,
-        "message": "OK",
-        "data": {
-            "id": "none",
-            "action": "ACTION_NONE"
-        }
-    })
-}
-
-/// Route: POST /{game_id}/mdk/shield/api/login
-/// The client provides a username & password in exchange for a session key.
-/// request: The request from the client.
-pub async fn create_session(request: &Request, _: String) -> Response {
-    // Attempt to decode the request's JSON body.
-    let body = body!(request, { "retcode": -202, "message": "No body provided." });
-    let body = decode!(AccountLogin, body, { "retcode": -202, "message": "Invalid JSON." });
-
-    // Find the account.
-    let account = match body.account.contains("@") {
-        true => Account::find_email(&body.account).await,
-        false => Account::find_username(&body.account).await
-    };
-
-    // Check if the account exists.
-    if account.is_none() {
-        return rsp!({ "retcode": -201, "message": "Game account cache information error" });
-    }
-
-    // Attempt to decrypt the password.
-    let password = match body.is_crypto {
-        false => body.password,
-        true => decrypt_password(body.password)
-    };
-
-    // Check if the password matches the account's password.
-    let account = account.unwrap();
-    if !verify_password(&password, &account.salt, &account.password) {
-        return rsp!({ "retcode": -201, "message": "Incorrect or invalid password" });
-    }
-
-    // Send back the account information.
-    rsp!({ "retcode": 0, "message": "OK", "data": account.login_data() })
-}
+pub mod login;
+pub mod logging;
+pub mod payment;
+pub mod config;
+pub mod account;
+pub mod verify;
+pub mod misc;
 
 /// Route: POST /{game_id}/mdk/shield/api/verify
 /// The client provides a cached session key to validate its lifetime.
