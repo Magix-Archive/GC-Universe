@@ -1,5 +1,4 @@
 mod options;
-mod utils;
 mod custom;
 mod proxy;
 mod system;
@@ -13,6 +12,7 @@ use std::sync::{Arc, Mutex};
 use clap::{arg, Arg, Command};
 use config::{*, ext::*};
 use once_cell::sync::Lazy;
+use common::utils;
 use crate::custom::snowflake_path;
 use crate::options::Options;
 use crate::structs::State;
