@@ -55,7 +55,7 @@ pub extern "C" fn ikcp_create(conv: u32, token: u32, user: *mut c_void) -> *mut 
 #[no_mangle]
 pub extern "C" fn ikcp_release(kcp: *mut Kcp<Stub>) {
     unsafe {
-        Box::from_raw(kcp);
+        let _ = Box::from_raw(kcp);
     }
 }
 
