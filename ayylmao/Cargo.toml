@@ -4,3 +4,34 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+
+# Tokio
+tokio = { version = "1", features = ["full"] }
+
+# Command-line argument parsing
+clap = { version = "4.5.1", features = ["default"] }
+
+# Config
+more-config = { version = "2.1.0", features = ["default", "json", "env", "binder", "chained"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+log = "0.4.21"
+pretty_env_logger = "0.5.0"
+colored = "2.1.0"
+
+# Packet Capturing
+pcap = "2.0.0"
+
+# Packet Parsing
+kcp = { path = "../kcp" }
+
+# Utility
+common = { path = "../rs-common" }
+crossbeam-channel = "0.5.12"
+bytes = "1"
+base64 = "0.22"
+rsa = "0.9"
