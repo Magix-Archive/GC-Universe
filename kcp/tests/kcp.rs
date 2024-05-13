@@ -227,6 +227,7 @@ fn run(mode: TestMode, msgcount: u32, lostrate: u32) {
 
     let mut kcp1 = Kcp::new(
         0x11223344,
+        0,
         KcpOutput {
             sim: vnet.clone(),
             peer: 0,
@@ -234,6 +235,7 @@ fn run(mode: TestMode, msgcount: u32, lostrate: u32) {
     );
     let mut kcp2 = Kcp::new(
         0x11223344,
+        0,
         KcpOutput {
             sim: vnet.clone(),
             peer: 1,

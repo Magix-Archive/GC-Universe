@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 keywords = ["kcp", "udp", "reliable"]
 documentation = "https://docs.rs/kcp"
-repository = "https://github.com/RustySamovar/kcp"
+repository = "https://github.com/Magix-Archive/GC-Universe"
 
 [lib]
 name = "kcp"
@@ -16,6 +16,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 bytes = "1.0"
 log = "0.4"
+xxhash-rust = { version = "0.8.10", features = ["xxh3"] }
 
 [dev-dependencies]
 time = "0.2"

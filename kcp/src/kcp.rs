@@ -3,6 +3,7 @@
 use std::cmp;
 use std::cmp::Ordering;
 use std::collections::VecDeque;
+use std::convert::TryInto;
 use std::io::{self, Cursor, Read, Write};
 
 use bytes::{Buf, BufMut, BytesMut};
@@ -78,6 +79,7 @@ struct KcpSegment {
     rto: u32,
     fastack: u32,
     xmit: u32,
+    byte_check_code: u32,
     data: BytesMut,
 }
 
@@ -96,6 +98,7 @@ impl KcpSegment {
             rto: 0,
             fastack: 0,
             xmit: 0,
+            byte_check_code: 0,
             data,
         }
     }
@@ -119,6 +122,9 @@ impl KcpSegment {
         buf.put_u32_le(self.sn);
         buf.put_u32_le(self.una);
         buf.put_u32_le(self.data.len() as u32);
+        // BEG PATCH: miHoYo proprietary
+        buf.put_u32_le(self.byte_check_code);
+        // END PATCH: miHoYo proprietary
         buf.put_slice(&self.data);
     }
 
@@ -622,6 +628,7 @@ impl<Output: Write> Kcp<Output> {
             let sn = buf.get_u32_le();
             let una = buf.get_u32_le();
             let len = buf.get_u32_le() as usize;
+            let byte_check_code = buf.get_u32_le();
 
             if buf.remaining() < len as usize {
                 debug!(
@@ -698,6 +705,7 @@ impl<Output: Write> Kcp<Output> {
                             segment.ts = ts;
                             segment.sn = sn;
                             segment.una = una;
+                            segment.byte_check_code = byte_check_code;
 
                             self.parse_data(segment);
                         }
@@ -882,6 +890,7 @@ impl<Output: Write> Kcp<Output> {
                     new_segment.rto = self.rx_rto;
                     new_segment.fastack = 0;
                     new_segment.xmit = 0;
+                    new_segment.byte_check_code = xxhash_rust::xxh3::xxh3_64(&new_segment.data).try_into().unwrap();
                     self.snd_buf.push_back(new_segment);
                 }
                 None => break,
