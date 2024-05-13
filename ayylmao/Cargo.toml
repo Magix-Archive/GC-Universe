@@ -29,6 +29,10 @@ pcap = "2.0.0"
 # Packet Parsing
 kcp = { path = "../kcp" }
 
+# WebSocket server
+tokio-tungstenite = { version = "0.21" }
+futures-util = "0.3.30"
+
 # Utility
 common = { path = "../rs-common" }
 crossbeam-channel = "0.5.12"
