@@ -64,7 +64,11 @@ impl Key {
 pub fn dispatch_keys() -> HashMap<u16, [u8; 4096]> {
     let mut keys = HashMap::new();
     for key in KEYS.lines() {
-        let (first_byte, key) = key.split_at(key.find(": ").unwrap());
+        let parts = key.split(": ").collect::<Vec<&str>>();
+        let (first_byte, key) = match parts.as_slice() {
+            [f, s] => (f, s),
+            _ => panic!("Invalid key format.")
+        };
 
         let first_byte = first_byte.parse::<u16>().unwrap();
         let mut key_bytes = [0u8; 4096];
