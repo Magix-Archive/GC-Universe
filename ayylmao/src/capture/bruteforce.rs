@@ -1,4 +1,4 @@
-use std::{num::Wrapping, time::Instant};
+use std::num::Wrapping;
 
 use common::utils;
 use log::{debug, warn};
@@ -64,7 +64,7 @@ impl Bruteforce {
         let mut generator = Random::seeded(seed as i32);
         for _ in 0..depth {
             let client_seed = generator.next_safe_uint64();
-            
+
             let seed = client_seed ^ server_seed;
             let key = Key::new(seed);
 
@@ -93,7 +93,7 @@ impl Bruteforce {
                 return Some(seed);
             }
         }
-        
+
         // Generate new seeds.
         for i in 0..3000i64 {
             let offset = if i % 2 == 0 { i / 2 } else { -(i - 1) / 2 };
@@ -131,11 +131,6 @@ impl Random {
             inextp: 0,
             seed_array: [0; 56],
         }
-    }
-
-    /// Creates a new instance of the `Random`.
-    pub fn new() -> Self {
-        Random::seeded(Instant::now().elapsed().as_millis() as i32)
     }
 
     /// Creates a new instance of the `Random`.
