@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Sniffer {
     #[serde(default = "Sniffer::default_address")]
     pub bind_address: String,
@@ -14,6 +15,7 @@ impl Sniffer {
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Deobfuscation {
     pub obfuscated_defs: String,
     pub output_dir: String,
@@ -21,6 +23,7 @@ pub struct Deobfuscation {
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Options {
     #[serde(default)]
     pub device: u16,
