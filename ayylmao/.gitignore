@@ -1,2 +1,6 @@
 # Runtime
 config.json
+previous_seeds.txt
+defs/
+dumps
+output/

@@ -56,6 +56,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let device = capture::get_device(&app);
             capture::capture(device, app.clone(), Box::new(sniffer::run)).await;
         },
+        Some(("deobfu", _)) => {
+            // Create the directories if they do not exist.
+            app.deobfuscation.make_dirs();
+
+            let device = capture::get_device(&app);
+            capture::capture(device, app.clone(), Box::new(deobfuscator::run)).await;
+        },
         _ => {
             error!("Invalid sub-command.");
             info!("See 'ayylmao help' for more information.");

@@ -45,3 +45,11 @@ pub fn xor(data: &mut [u8], key: &[u8]) {
         data[i] ^= key[i % key.len()];
     }
 }
+
+/// Recursively create a directory if it does not exist.
+/// directory: The directory to create.
+pub fn make_dir<S: AsRef<str>>(directory: S) {
+    if !Path::new(directory.as_ref()).exists() {
+        let _ = std::fs::create_dir_all(directory.as_ref());
+    }
+}

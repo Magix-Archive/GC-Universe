@@ -11,5 +11,5 @@ dist/
 target/
 
 # Runtime
-run/
+run
 config.json
