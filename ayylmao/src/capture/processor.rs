@@ -149,8 +149,8 @@ impl PacketProcessor {
     /// packet: The raw packet data.
     /// from_client: Is the packet from the client?
     pub fn decrypt_packet(
-        &mut self, 
-        mut packet: Vec<u8>, 
+        &mut self,
+        mut packet: Vec<u8>,
         from_client: bool
     ) -> Option<Packet> {
         // Attempt to decrypt the data.
@@ -163,7 +163,7 @@ impl PacketProcessor {
                 if keys.contains_key(&index) {
                     let key = Key::from(&keys[&index]);
                     key.xor(&mut packet);
-                    
+
                     self.decryption_key = Some(PacketKey::Dispatch(key));
 
                     Some(packet)
@@ -263,7 +263,7 @@ impl PacketProcessor {
         self.token_rsp = Some((
             sent_time,
             u64::from_be_bytes(content[0..8].try_into().unwrap())
-        ))
+        ));
     }
 }
 
