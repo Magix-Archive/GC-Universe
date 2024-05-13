@@ -2,7 +2,7 @@ use bytes::BufMut;
 use common::utils;
 use std::collections::HashMap;
 
-use crate::sniffer::bruteforce::MT19937_64;
+use crate::capture::bruteforce::MT19937_64;
 
 const KEYS: &str = include_str!("../resources/mhy_keys.txt");
 
@@ -51,7 +51,7 @@ impl Key {
         let key_len = self.bytes.len();
 
         let prefix_valid = self.bytes[0] == prefix[0] && self.bytes[1] == prefix[1];
-        let suffix_valid = 
+        let suffix_valid =
             self.bytes[(data_len - 2) % key_len] == suffix[0] &&
             self.bytes[(data_len - 1) % key_len] == suffix[1];
 

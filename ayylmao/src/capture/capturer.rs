@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex};
 
+use crossbeam_channel::Sender;
 use log::{debug, info, warn};
-use pcap::{Capture, Device, Linktype, Packet};
+use pcap::{Capture, Device, Linktype, Packet as PcapPacket};
 
-use super::processor::PacketProcessor;
+use super::processor::{PacketProcessor, Packet};
 
 const CONNECT_CMD: u32 = 0x00000145;
 const DISCONNECT_CMD: u32 = 0x00000194;
@@ -28,7 +29,7 @@ impl Capturer {
 
     /// Main loop for capturing packets.
     /// device: The device to capture packets from.
-    pub fn run(&mut self, device: Device) {
+    pub fn run(&mut self, device: Device, tx: Sender<Packet>) {
         // Initialize the packet capturer.
         let mut capturer = Capture::from_device(device)
             .unwrap()
@@ -45,7 +46,7 @@ impl Capturer {
         // Start capturing packets.
         while self.shutdown_hook.lock().unwrap().eq(&false) {
             if let Ok(packet) = capturer.next_packet() {
-                self.parse_packet(packet, is_ethernet);
+                self.parse_packet(packet, is_ethernet, &tx);
             }
         }
 
@@ -56,7 +57,12 @@ impl Capturer {
     /// Parses a received packet.
     /// packet: The packet to parse.
     /// is_ethernet: Was the packet received via Ethernet?
-    pub fn parse_packet(&mut self, packet: Packet, is_ethernet: bool) {
+    pub fn parse_packet(
+        &mut self,
+        packet: PcapPacket,
+        is_ethernet: bool,
+        tx: &Sender<Packet>
+    ) {
         let data = packet.data.to_vec();
 
         let (data, port) = {
@@ -99,7 +105,13 @@ impl Capturer {
             self.processor.process(&data, is_client);
             let (client_packet, server_packet) = self.processor.receive_both();
 
-            // TODO: Send packets to wherever.
+            // Forward the packet to the handler.
+            if let Some(packet) = client_packet {
+                tx.send(packet).unwrap();
+            }
+            if let Some(packet) = server_packet {
+                tx.send(packet).unwrap();
+            }
         }
     }
 }

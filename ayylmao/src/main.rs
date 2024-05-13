@@ -1,6 +1,8 @@
 mod keys;
-mod sniffer;
+mod capture;
 mod options;
+mod sniffer;
+mod deobfuscator;
 
 use std::error::Error;
 
@@ -51,8 +53,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     match matches.subcommand() {
         Some(("devices", _)) => list_devices(),
         Some(("sniff", _)) => {
-            let device = sniffer::get_device(&app);
-            sniffer::capture(device).await;
+            let device = capture::get_device(&app);
+            capture::capture(device, app.clone(), Box::new(sniffer::run)).await;
         },
         _ => {
             error!("Invalid sub-command.");
@@ -70,7 +72,7 @@ fn list_devices() {
     for (i, device) in devices.iter().enumerate() {
         info!(
             "{}: {}, {}, Status: {}",
-            i.to_string().bold(), 
+            i.to_string().bold(),
             device.name.bright_blue(),
             device.desc.as_ref().unwrap_or(&"N/A".to_string()),
             format!("{:?}", device.flags.connection_status).bright_green()
