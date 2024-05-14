@@ -3,6 +3,12 @@ name = "ayylmao"
 version = "0.1.0"
 edition = "2021"
 
+[build-dependencies]
+
+# Protocol definition generation
+protobuf-codegen = "3.4"
+protoc-bin-vendored = "3"
+
 [dependencies]
 
 # Tokio
@@ -28,6 +34,9 @@ pcap = "2.0.0"
 
 # Packet Parsing
 kcp = { path = "../kcp" }
+protobuf = "3.4"
+protobuf-parse = "3.4"
+protobuf-json-mapping = "3.4"
 
 # WebSocket server
 tokio-tungstenite = { version = "0.21" }
