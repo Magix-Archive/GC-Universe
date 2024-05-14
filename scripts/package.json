@@ -1,0 +1,8 @@
+{
+  "name": "gc-universe-scripts",
+  "description": "A collection of scripts for GC Universe.",
+  "private": true,
+  "devDependencies": {
+    "bun-types": "^1.1.8"
+  }
+}

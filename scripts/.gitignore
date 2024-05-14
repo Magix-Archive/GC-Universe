@@ -1,0 +1,6 @@
+node_modules/
+
+# parse-ids.ts
+all-in-one.proto
+nameTranslation.txt
+packet-ids.csv
