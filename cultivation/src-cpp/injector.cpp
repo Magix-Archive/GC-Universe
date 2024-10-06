@@ -246,7 +246,7 @@ void InjectDll(const HANDLE hProcess, const std::string& dllPath)
     return;
 }
 
-extern "C" void open_game(const char* game_path, const char* dll_path) {
+extern "C" void open_game(const char* game_path, const char* dll_path, bool skip_driver) {
     print("[Launch Game] Opening game from " + std::string(game_path) + "...");
 
     HANDLE hProcess, hThread;
@@ -256,14 +256,29 @@ extern "C" void open_game(const char* game_path, const char* dll_path) {
         return;
     }
 
-    WaitForDriver(&hProcess);
+    if (!skip_driver)
+    {
+        WaitForDriver(&hProcess);
+    }
+    else
+    {
+        print("[Disable AC] Driver check has been skipped.");
+    }
 
     print("[DLL Injection] Waiting for the game to load...");
     Sleep(5e3);
 
     print("[DLL Injection] Injecting DLL from " + std::string(dll_path) + "...");
 
+    if (skip_driver)
+    {
+        InternalSuspend(&hProcess);
+    }
     InjectDll(hProcess, std::string(dll_path));
+    if (skip_driver)
+    {
+        InternalResume(&hProcess);
+    }
 
     Sleep(2e3);
     ResumeThread(hThread);

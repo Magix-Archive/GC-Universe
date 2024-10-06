@@ -40,7 +40,7 @@ macro_rules! fetch {
 global!(STATE, State);
 
 extern "C" {
-    fn open_game(game_path: *const c_char, dll_path: *const c_char);
+    fn open_game(game_path: *const c_char, dll_path: *const c_char, skip_driver: bool);
 }
 
 fn game() -> Arg {
@@ -72,6 +72,11 @@ fn clap() -> Command {
                     .num_args(0..=1)
                     .default_value("true")
                     .default_missing_value("true"))
+                .arg(arg!(--skip_driver <ENABLED> "Skips checking for the anti-cheat driver")
+                    .value_parser(clap::value_parser!(bool))
+                    .num_args(0..=1)
+                    .default_value("false")
+                    .default_missing_value("false"))
         )
         .subcommand(
             Command::new("proxy")
@@ -151,6 +156,8 @@ async fn main() {
                         .unwrap_or(&false);
                     let with_proxy = matches.get_one::<bool>("proxy")
                         .unwrap_or(&true);
+                    let skip_driver = matches.get_one::<bool>("skip_driver")
+                        .unwrap_or(&false);
 
                     // Check if the game path exists.
                     if !utils::file_exists(&game.path) {
@@ -170,7 +177,7 @@ async fn main() {
                         let dll_path = CString::new(snowflake_path()).unwrap();
 
                         unsafe {
-                            open_game(game_path.as_ptr(), dll_path.as_ptr());
+                            open_game(game_path.as_ptr(), dll_path.as_ptr(), *skip_driver);
                         }
                     } else {
                         // Launch the game.
