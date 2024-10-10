@@ -133,7 +133,7 @@ pub fn install_location() -> String {
         return exe_path.to_str().unwrap().to_string();
     }
 
-    #[cfg(linux)]
+    #[cfg(target_os = "linux")]
     {
         let bin_name = exe_path.file_name().unwrap().to_str().unwrap().to_string();
         exe_path.pop();

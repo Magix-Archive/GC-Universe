@@ -20,12 +20,12 @@ pub fn snowflake_path() -> String {
     path
 }
 
-#[cfg(linux)]
+#[cfg(target_os = "linux")]
 pub fn snowflake_path() -> String {
     "".to_string()
 }
 
-#[cfg(macos)]
+#[cfg(target_os = "macos")]
 pub fn snowflake_path() -> String {
     "".to_string()
 }
@@ -48,12 +48,12 @@ pub fn enable_proxy(options: &Options) {
     internet_settings.set_value("ProxyEnable", &Data::U32(1)).unwrap();
 }
 
-#[cfg(linux)]
+#[cfg(target_os = "linux")]
 pub fn enable_proxy(options: &Options) {
     println!("Enabling proxy...");
 }
 
-#[cfg(macos)]
+#[cfg(target_os = "macos")]
 pub fn enable_proxy(options: &Options) {
     println!("Enabling proxy...");
 }
@@ -69,12 +69,12 @@ pub fn disable_proxy() {
     internet_settings.set_value("ProxyEnable", &Data::U32(0)).unwrap();
 }
 
-#[cfg(linux)]
+#[cfg(target_os = "linux")]
 pub fn disable_proxy() {
     println!("Disabling proxy...");
 }
 
-#[cfg(macos)]
+#[cfg(target_os = "macos")]
 pub fn disable_proxy() {
     println!("Disabling proxy...");
 }
