@@ -1,0 +1,82 @@
+Subject: [PATCH] misc: Hide Lua debugging messages
+
+while we should demote the Lua messages to verbose, this will do for now
+---
+Index: src/main/java/emu/grasscutter/scripts/ScriptLib.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/emu/grasscutter/scripts/ScriptLib.java b/src/main/java/emu/grasscutter/scripts/ScriptLib.java
+--- a/src/main/java/emu/grasscutter/scripts/ScriptLib.java	(revision f9d46ace7ff6a0ed248adf2bb3a5eb80dda864b0)
++++ b/src/main/java/emu/grasscutter/scripts/ScriptLib.java	(date 1720476681181)
+@@ -31,7 +31,9 @@
+ 
+ @SuppressWarnings("unused")
+ public class ScriptLib {
+-    public static final Logger logger = Grasscutter.getLogger();
++    // GC-Universe - Separate Lua logger
++    private final Logger logger = LoggerFactory.getLogger("Lua Engine");
++
+     private final FastThreadLocal<SceneScriptManager> sceneScriptManager;
+     private final FastThreadLocal<SceneGroup> currentGroup;
+     private final FastThreadLocal<ScriptArgs> callParams;
+@@ -42,6 +44,12 @@
+         this.currentGroup = new FastThreadLocal<>();
+         this.callParams = new FastThreadLocal<>();
+         this.currentEntity = new FastThreadLocal<>();
++
++        // GC-Universe start - Lua logger debug constant
++        if (emu.grasscutter.DebugConstants.LOG_LUA_SCRIPTS) {
++            io.grasscutter.Log.apply(this.logger);
++        }
++        // GC-Universe end
+     }
+ 
+     public void setSceneScriptManager(SceneScriptManager sceneScriptManager) {
+Index: src/main/java/emu/grasscutter/scripts/SceneScriptManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/emu/grasscutter/scripts/SceneScriptManager.java b/src/main/java/emu/grasscutter/scripts/SceneScriptManager.java
+--- a/src/main/java/emu/grasscutter/scripts/SceneScriptManager.java	(revision f9d46ace7ff6a0ed248adf2bb3a5eb80dda864b0)
++++ b/src/main/java/emu/grasscutter/scripts/SceneScriptManager.java	(date 1720476630900)
+@@ -1008,7 +1008,8 @@
+         try {
+             return func.call(ScriptLoader.getScriptLibLua(), args);
+         } catch (LuaError error) {
+-            ScriptLib.logger.error(
++            // GC-Universe - Use Grasscutter#getLogger
++            Grasscutter.getLogger().error(
+                     "[LUA] call trigger failed in group {} with {},{}", group.id, name, args, error);
+             return LuaValue.valueOf(-1);
+         }
+Index: src/main/java/emu/grasscutter/scripts/data/controller/EntityController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/emu/grasscutter/scripts/data/controller/EntityController.java b/src/main/java/emu/grasscutter/scripts/data/controller/EntityController.java
+--- a/src/main/java/emu/grasscutter/scripts/data/controller/EntityController.java	(revision f9d46ace7ff6a0ed248adf2bb3a5eb80dda864b0)
++++ b/src/main/java/emu/grasscutter/scripts/data/controller/EntityController.java	(date 1720476716882)
+@@ -85,7 +85,8 @@
+                                 .invoke(new LuaValue[] {ScriptLoader.getScriptLibLua(), arg1, arg2, arg3})
+                                 .arg1();
+             } catch (LuaError error) {
+-                ScriptLib.logger.error(
++                // GC-Universe - Use Grasscutter#getLogger
++                Grasscutter.getLogger().error(
+                         "[LUA] call function failed in gadget {} with {} {} {},{}",
+                         entity.getEntityTypeId(),
+                         funcName,
+@@ -96,7 +97,8 @@
+                 ret = LuaValue.valueOf(-1);
+             }
+         } else if (funcName != null && !SERVER_CALLED.contains(funcName)) {
+-            ScriptLib.logger.error(
++            // GC-Universe - Use Grasscutter#getLogger
++            Grasscutter.getLogger().error(
+                     "[LUA] unknown func in gadget {} with {} {} {} {}",
+                     entity.getEntityTypeId(),
+                     funcName,
