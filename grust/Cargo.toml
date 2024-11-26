@@ -1,0 +1,15 @@
+[package]
+name = "grust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+jni = "0.21.1"
+lazy_static = "1.5.0"
+tokio = { version = "1.38.0", features = ["full"] }
+anyhow = "1.0.86"
+log = "0.4.22"
+pretty_env_logger = "0.5.0"
