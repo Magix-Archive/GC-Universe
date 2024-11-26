@@ -11,5 +11,11 @@ dist/
 target/
 
 # Runtime
-run
+*run
 config.json
+
+# Protocol Definitions
+protobuf/
+
+# Deprecated handbook
+handbook/
